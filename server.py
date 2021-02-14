@@ -2,88 +2,89 @@
 
 from socket import *
 
-#dict for registered contact-name database
-register = {}
+#
+register_list = {}
+name_list = {}
 
-#dict for contact-list-name database
-conlistname = {}
-
-
-
+#assign the same port number
 serverPort = 3555
 serverSocket = socket(AF_INET, SOCK_DGRAM)
-serverSocket.bind(('', serverPort))
+#bind the port to the socket
+serverSocket.bind(('192.168.101.8', serverPort))
 print('The server is ready to receive')
 while True:
+ #store data and address
  message, clientAddress = serverSocket.recvfrom(2048)
  print('recieved',clientAddress)
+ #takes the message from client
  modifiedMessage = message.decode()
+ #get the first word to identify the command
  keyword = modifiedMessage.split(' ',1)[0]
 
  if keyword == "register":
-  contactname = modifiedMessage.split(" ")[1]
-  ip = modifiedMessage.split(" ")[2]
-  port = modifiedMessage.split(" ")[3]
-  if contactname not in register:
-   register[contactname] = [ip, port]
+  username = modifiedMessage.split(" ")[1]
+  if username not in register_list:
+   register_list[username] = [modifiedMessage.split(" ")[2], modifiedMessage.split(" ")[3]] #store to data structure
    serverSocket.sendto("Success".encode(), clientAddress)
   else:
    serverSocket.sendto("Failure".encode(), clientAddress)
 
  elif keyword == "create":
-  contactlistname = modifiedMessage.split(" ")[1]
-  if contactlistname not in conlistname:
-   conlistname[contactlistname] = []  # create a empty list for the name(as dict key)
+  listname = modifiedMessage.split(" ")[1]
+  if listname not in name_list:
+   name_list[listname] = []  # create a new list
    serverSocket.sendto("Success".encode(), clientAddress)
   else:
    serverSocket.sendto("Failure".encode(), clientAddress)
 
  elif keyword == "query-lists":
-  returnstr = str(len(conlistname)) + " " + str(conlistname.keys())
-  serverSocket.sendto(returnstr.encode(), clientAddress)
+  s = str(len(name_list)) + " " + str(name_list.keys()) #return the number of names and all the listname
+  serverSocket.sendto(s.encode(), clientAddress)
 
  elif keyword == "join":
-  contactlistname2 = modifiedMessage.split(" ")[1]
-  contactname2 = modifiedMessage.split(" ")[2]
-  if contactname2 in register:  # check to see if the contact name is registered
-   if contactlistname2 in conlistname:  # check to see if the contact-name-list exists
-    if contactname2 not in conlistname.get(contactlistname2):  # check to see if the contact name is already in the contact-name-list
-     conlistname[contactlistname2].append(contactname2)
-     conlistname[contactlistname2].append(register.get(contactname2))
+  tmp_listname = modifiedMessage.split(" ")[1]
+  tmp_username = modifiedMessage.split(" ")[2]
+  if tmp_username in register_list and tmp_listname in name_list:  # check to see if name exits
+    if tmp_username not in name_list.get(tmp_listname):  # join the list
+     name_list[tmp_listname].append(tmp_username)
+     name_list[tmp_listname].append(register_list.get(tmp_username))
      serverSocket.sendto("Success".encode(), clientAddress)
     else:
      serverSocket.sendto("Failure".encode(), clientAddress)
-   else:
-    serverSocket.sendto("Failure".encode(), clientAddress)
   else:
    serverSocket.sendto("Failure".encode(), clientAddress)
 
 
  elif keyword == "exit":
-  exitcontactname = modifiedMessage.split(" ")[1]
-  exitIPandport = register.get(exitcontactname)
-  del register[exitcontactname]
-  for key in conlistname:
-   if exitcontactname in conlistname[key]:
-    conlistname[key].remove(exitcontactname)
-    conlistname[key].remove(exitIPandport)
-    serverSocket.sendto("Success".encode(), clientAddress)
-   else:
-    serverSocket.sendto("Failure".encode(), clientAddress)
+  user_exit = modifiedMessage.split(" ")[1]
+  port_exit = register_list.get(user_exit)
+  if user_exit in register_list:
+   del register_list[user_exit]#remove from register list
+   for key in name_list:#remove from contact list
+    if user_exit in name_list[key]:
+     name_list[key].remove(user_exit)
+     name_list[key].remove(port_exit)
+     serverSocket.sendto("Success".encode(), clientAddress)
+    else:
+     serverSocket.sendto("Failure".encode(), clientAddress)
+  else:
+   serverSocket.sendto("Failure".encode(), clientAddress)
 
 
  elif keyword == "save":
-  with open("file-name.txt", "w") as text_file:
-   print(len(register), file=text_file)
-   print(register, file=text_file)
-   print(len(conlistname), file=text_file)
-   for key2 in conlistname:
-    print(key2, (len(conlistname[key2]) / 2), file=text_file)
+  try:
+   file_name = modifiedMessage.split(" ")[1]
+   #add info to the new file
+   with open("%s.txt" % file_name, "w+") as txt:
+    print(len(register_list), file=txt)
+    print(register_list, file=txt)
+    print(len(name_list), file=txt)
+    for name in name_list:
+     print(name, (int(len(name_list[name]) / 2)), file=txt)
+    serverSocket.sendto("Success".encode(), clientAddress)
+  except:
+   serverSocket.sendto("Failure".encode(), clientAddress)
 
-   serverSocket.sendto("Success".encode(), clientAddress)
+ print(register_list)  # print all names
 
-
-
- print(register)  # print all registered contact-names
- #serverSocket.sendto(modifiedMessage.encode(), clientAddress)
 
