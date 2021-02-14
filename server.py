@@ -10,7 +10,7 @@ name_list = {}
 serverPort = 3555
 serverSocket = socket(AF_INET, SOCK_DGRAM)
 #bind the port to the socket
-serverSocket.bind(('192.168.101.8', serverPort))
+serverSocket.bind(('10.120.70.106', serverPort))
 print('The server is ready to receive')
 while True:
  #store data and address
