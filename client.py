@@ -3,8 +3,10 @@
 
 from socket import *
 #set the hostname and port
-serverName = '10.120.70.106'
-serverPort = 3555
+
+#serverName = '10.120.70.106'
+serverName = '127.0.0.1'
+serverPort = 3666
 #creates the clients socket
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
