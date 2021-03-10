@@ -4,8 +4,7 @@
 from socket import *
 #set the hostname and port
 
-#serverName = '10.120.70.106'
-serverName = '127.0.0.1'
+serverName = '10.120.70.106'
 serverPort = 3666
 #creates the clients socket
 clientSocket = socket(AF_INET, SOCK_DGRAM)
@@ -26,9 +25,9 @@ while True:
             break
 
     if "im-start" == message.split(" ")[0]:
-        immessage = input('Text Message: ')
-        print("Sent: " + immessage)
-        clientSocket.sendto(immessage.encode(), (serverName, serverPort))
+        meg = input('Text Message: ')
+        print("Sent: " + meg)
+        clientSocket.sendto(meg.encode(), (serverName, serverPort))
         modifiedMessage, serverAddress = clientSocket.recvfrom(2048)
         if modifiedMessage.decode() == "Success":
             print("server received")
