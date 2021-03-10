@@ -9,6 +9,9 @@ serverName = '127.0.0.1'
 serverPort = 3666
 #creates the clients socket
 clientSocket = socket(AF_INET, SOCK_DGRAM)
+clientPort = int(input("Enter client port:"))
+clientSocket.bind(('', clientPort))
+
 
 while True:
     message = input('Enter String:')
@@ -21,3 +24,11 @@ while True:
         if modifiedMessage.decode() == "Success":
             clientSocket.close()
             break
+
+    if "im-start" == message.split(" ")[0]:
+        immessage = input('Text Message: ')
+        print("Sent: " + immessage)
+        clientSocket.sendto(immessage.encode(), (serverName, serverPort))
+        modifiedMessage, serverAddress = clientSocket.recvfrom(2048)
+        if modifiedMessage.decode() == "Success":
+            print("server received")
